@@ -3,7 +3,7 @@ import pandas as pd
 import config
 import fitbit
 
-class SleepLogs(fitbit.FitbitApi):
+class Sleep(fitbit.FitbitApi):
     def __init__(self, access_token, user_id="-"):
         self.user_id = user_id
         super().__init__(access_token, self.user_id)
@@ -98,7 +98,7 @@ class SleepLogs(fitbit.FitbitApi):
 
 
 if __name__ == "__main__":
-    sleep_log = SleepLogs(config.ACCESS_TOKEN)
+    sleep_log = Sleep(config.ACCESS_TOKEN)
     log_by_date = sleep_log.getSleepLogByDate("2022-01-08")
     date_by_range = sleep_log.getSleepLogByDateRange("2022-01-04", "2022-01-08")
     log_list = sleep_log.getSleepLogList(before_date="2022-01-09", limit=10)

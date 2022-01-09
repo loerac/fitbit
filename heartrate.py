@@ -38,8 +38,8 @@ class HeartRate(fitbit.FitbitApi):
            summary values.
 
         Args:
-            start_date: Where to start the range entries, YYYY-MM-DD
-            end_date: Where to end the range entries, YYYY-MM-DD
+            start_date: When to start the range entries, YYYY-MM-DD
+            end_date: When to end the range entries, YYYY-MM-DD
 
         Returns:
             dict: heart rate activities

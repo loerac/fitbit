@@ -1,10 +1,8 @@
 import pandas as pd
 
 import config
+import constants
 import fitbit
-
-SUPPORTED_RESOURCE = ["caloriesIn", "water"]
-SUPPORTED_RANGE = ["1d", "7d", "30d", "1w", "1m"]
 
 
 class Nutrition(fitbit.FitbitApi):
@@ -49,12 +47,12 @@ class Nutrition(fitbit.FitbitApi):
         Returns:
             dict: Resource entry of consumed resource
         """
-        if resource not in SUPPORTED_RESOURCE:
-            print(f"Resource {resource} not supported: {SUPPORTED_RESOURCE}")
+        if resource not in constants.SUPPORTED_RESOURCE:
+            print(f"Resource {resource} not supported: {constants.SUPPORTED_RESOURCE}")
             return None
 
-        if period not in SUPPORTED_RANGE:
-            print(f"Period {period} not supported: {SUPPORTED_RANGE}")
+        if period not in constants.SUPPORTED_RANGE:
+            print(f"Period {period} not supported: {constants.SUPPORTED_RANGE}")
             return None
 
         url = f"/foods/log/water/date/{date}/{period}.json"
@@ -77,8 +75,8 @@ class Nutrition(fitbit.FitbitApi):
         Returns:
             dict: Resource entry of consumed resource
         """
-        if resource not in SUPPORTED_RESOURCE:
-            print(f"Resource {resource} not supported: {SUPPORTED_RESOURCE}")
+        if resource not in constants.SUPPORTED_RESOURCE:
+            print(f"Resource {resource} not supported: {constants.SUPPORTED_RESOURCE}")
             return None
 
         url = f"/foods/log/{resource}/date/{start_date}/{end_date}.json"
@@ -100,6 +98,6 @@ if __name__ == "__main__":
     water_log = nutrition.getWaterLog("2022-01-06")
     nutrition_by_date = nutrition.getNutritionByDate()
     nutrition_by_range = nutrition.getNutritionDateRange(
-        resource="water", start_date="2022-01-04", end_date="2022-01-08"
+        resource="caloriesIn", start_date="2022-01-04", end_date="2022-01-08"
     )
     breakpoint()

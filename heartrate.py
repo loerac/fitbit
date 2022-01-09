@@ -1,7 +1,7 @@
 import config
+import constants
 import fitbit
 
-SUPPORTED_RANGE = ["1d", "7d", "30d", "1w", "1m"]
 
 class HeartRate(fitbit.FitbitApi):
     def __init__(self, access_token, user_id="-"):
@@ -22,8 +22,8 @@ class HeartRate(fitbit.FitbitApi):
                 dict: heart rate activities
                 dict: heart rate series
         """
-        if period not in SUPPORTED_RANGE:
-            print(f"Period {period} not supported: {SUPPORTED_RANGE}")
+        if period not in constants.SUPPORTED_RANGE:
+            print(f"Period {period} not supported: {constants.SUPPORTED_RANGE}")
             return None
 
         url = f"/activities/heart/date/{date}/{period}.json"

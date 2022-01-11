@@ -1,4 +1,4 @@
-import pandas as pd
+from collections import Counter
 
 import config
 import fitbit
@@ -18,7 +18,10 @@ class Sleep(fitbit.FitbitApi):
             A dict of the sleep log entry
         """
         url = f"/sleep/date/{date}.json"
-        return self.request(url)
+        sleep_logs = self.request(url)
+        sleep_logs = self.parseSleepLogs(sleep_logs)
+
+        return sleep_logs
 
     def getSleepLogByDateRange(self, start_date: str, end_date: str):
         """Returns a list of a user's sleep log entries for a given date range.
@@ -31,7 +34,10 @@ class Sleep(fitbit.FitbitApi):
             A dict of the sleep log entries
         """
         url = f"/sleep/date/{start_date}/{end_date}.json"
-        return self.request(url)
+        sleep_logs = self.request(url)
+        sleep_logs = self.parseSleepLogs(sleep_logs)
+
+        return sleep_logs
 
     def getSleepLogList(
         self, before_date=None, after_date=None, sort="asc", limit=1, offset=0
@@ -55,10 +61,8 @@ class Sleep(fitbit.FitbitApi):
             date_range = f"beforeDate={before_date}&afterDate={after_date}&"
         elif before_date and after_date is None:
             date_range = f"beforeDate={before_date}&"
-            sort = "desc"
         elif before_date is None and after_date:
             date_range = f"afterDate={after_date}&"
-            sort = "acs"
         else:
             print("Before date or after date is required")
             return None
@@ -74,7 +78,10 @@ class Sleep(fitbit.FitbitApi):
             f"offset={offset}&"
             f"limit={limit}"
         )
-        return self.request(url)
+        sleep_logs = self.request(url)
+        sleep_logs = self.parseSleepLogs(sleep_logs)
+
+        return sleep_logs
 
     def parseSleepLogs(self, data: dict, use_short_data=False) -> list:
         """Parse regular sleep log, to get short sleep logs set
@@ -90,20 +97,47 @@ class Sleep(fitbit.FitbitApi):
         sleep_logs = []
         for d in data.get("sleep"):
             levels = d["levels"]
-            tmp_df = pd.DataFrame(levels[entry_level])
-            tmp_df["total_seconds"] = tmp_df["seconds"].cumsum()
-            sleep_logs.append(tmp_df.to_dict("records"))
+            sleep_stats = self.sleepStats(levels[entry_level])
+            sleep_logs.append(sleep_stats)
 
         return sleep_logs
+
+    def sleepStats(self, sleep_logs: dict) -> dict:
+        """Calculates the total time slept in seconds and amount of time and
+           percent in each stage
+
+        Args:
+            sleep_logs: Sleep logs containing the entries
+
+        Returns:
+            dict: updated log entries with time spent sleeping and time/percent
+                  at each stage `{"entries": [<ENTRIES>], "stages": {<STAGES>}}`
+        """
+        previous_sec = 0
+        sleep_stats = {
+            "entries":[], "stages": Counter()
+        }
+
+        # Calculate amount of time slept
+        for entry in sleep_logs:
+            if entry["level"] != "wake":
+                previous_sec += entry["seconds"]
+            entry["seconds_slept"] = previous_sec
+
+            sleep_stats["entries"].append(entry)
+            sleep_stats["stages"][entry["level"]] += entry["seconds"]
+
+        # Calculate average time in each stage
+        total_time_spent = sum(sleep_stats["stages"].values())
+        for label, spent in sleep_stats["stages"].items():
+            sleep_stats["stages"][label] = [spent, (spent / total_time_spent)]
+
+        return sleep_stats
 
 
 if __name__ == "__main__":
     sleep_log = Sleep(config.ACCESS_TOKEN)
-    log_by_date = sleep_log.getSleepLogByDate("2022-01-08")
+    log_by_date = sleep_log.getSleepLogByDate("2022-01-05")
     date_by_range = sleep_log.getSleepLogByDateRange("2022-01-04", "2022-01-08")
-    log_list = sleep_log.getSleepLogList(before_date="2022-01-09", limit=10)
-
-    log_by_date = sleep_log.parseSleepLogs(log_by_date)
-    date_by_range = sleep_log.parseSleepLogs(date_by_range)
-    log_list = sleep_log.parseSleepLogs(log_list)
+    log_list = sleep_log.getSleepLogList(before_date="2022-01-10", limit=10)
     breakpoint()

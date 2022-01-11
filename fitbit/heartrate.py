@@ -1,9 +1,9 @@
 import config
 import constants
-import fitbit
+import fitbitApi
 
 
-class HeartRate(fitbit.FitbitApi):
+class HeartRate(fitbitApi.FitbitApi):
     def __init__(self, access_token, user_id="-"):
         self.user_id = user_id
         super().__init__(access_token, self.user_id)
